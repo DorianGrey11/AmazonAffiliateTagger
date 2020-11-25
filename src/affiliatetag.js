@@ -48,7 +48,6 @@ async function getAffTag() {
  *
  * @returns {Promise<string>} lastUrl
  */
-
 async function getLastUrl() {
     /**
      * last visited Amazon URL
@@ -65,9 +64,34 @@ async function getLastUrl() {
 }
 
 /**
+ * tries to get the Amazon Smile option from the browser's session storage area.
+ * Otherwise false is returned.
+ *
+ * @returns {Promise<boolean>} smileOpt
+ */
+async function getSmileOpt() {
+    /**
+     * Amazon Smile redirection option
+     * @type {boolean} smileOpt
+     */
+    let smileOpt = false;
+
+    try {
+        smileOpt =  (await browser.storage.sync.get("smileOpt")).smileOpt; //gets the smileOpt checked value
+        if (!smileOpt) {
+            smileOpt = false;
+        }
+    } catch {
+        console.log("Could not sync smileOpt");
+    }
+
+    return Promise.resolve(smileOpt);
+}
+
+/**
  * changes the tag parameter of an Amazon product page to the {@link getAffTag} value.
  */
-function changeUrl([affTag, lastUrl]) {
+function changeUrl([affTag, lastUrl, smileOpt]) {
 
     let activeUrl = new URL(window.location.href);
     let urlSearchParams = new URLSearchParams(activeUrl.search);
@@ -85,10 +109,15 @@ function changeUrl([affTag, lastUrl]) {
         urlSearchParams.set('tag', affTag);
         // change the search property of the activeUrl
         activeUrl.search = urlSearchParams.toString();
+        let newUrlString = activeUrl.toString()
+
+        if (smileOpt){
+            newUrlString = newUrlString.replace("www.","smile.")
+        }
 
         // replaces the activeUrl
-        window.location.replace(activeUrl.toString());
+        window.location.replace(newUrlString);
     }
 }
 
-Promise.all([getAffTag(), getLastUrl()]).then(changeUrl);
+Promise.all([getAffTag(), getLastUrl(), getSmileOpt()]).then(changeUrl);
