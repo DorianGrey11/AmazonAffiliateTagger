@@ -77,7 +77,7 @@ async function getSmileOpt() {
     let smileOpt = false;
 
     try {
-        smileOpt =  (await browser.storage.sync.get("smileOpt")).smileOpt; //gets the smileOpt checked value
+        smileOpt = (await browser.storage.sync.get("smileOpt")).smileOpt; //gets the smileOpt checked value
         if (!smileOpt) {
             smileOpt = false;
         }
@@ -109,13 +109,14 @@ function changeUrl([affTag, lastUrl, smileOpt]) {
         urlSearchParams.set('tag', affTag);
         // change the search property of the activeUrl
         activeUrl.search = urlSearchParams.toString();
-        let newUrlString = activeUrl.toString()
-
-        if (smileOpt){
-            newUrlString = newUrlString.replace("www.","smile.")
+        //create new URL
+        let newUrlString = activeUrl.toString();
+        //changes to Amazon Smile if applicable
+        if (smileOpt && /www\.amazon\.(com|co\.uk|de)/i.test(activeUrl.hostname)) {
+            newUrlString = newUrlString.replace("www.amazon.", "smile.amazon.");
         }
 
-        // replaces the activeUrl
+        // replaces the windows location URL
         window.location.replace(newUrlString);
     }
 }
